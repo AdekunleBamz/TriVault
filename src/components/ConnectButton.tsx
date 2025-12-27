@@ -19,7 +19,7 @@ export function ConnectButton() {
   useEffect(() => {
     if (isInFrame && !isConnected && connectors.length > 0) {
       // Find the Farcaster connector
-      const farcasterConnector = connectors.find(c => c.id === 'farcasterFrame')
+      const farcasterConnector = connectors.find(c => c.id === 'farcasterMiniApp')
       if (farcasterConnector) {
         connect({ connector: farcasterConnector })
       }
@@ -70,7 +70,7 @@ export function ConnectButton() {
   return (
     <div className="flex flex-wrap gap-2">
       {connectors
-        .filter(c => c.id !== 'farcasterFrame') // Hide Farcaster connector outside frame
+        .filter(c => c.id !== 'farcasterMiniApp') // Hide Farcaster connector outside frame
         .map((connector) => (
           <button
             key={connector.uid}
