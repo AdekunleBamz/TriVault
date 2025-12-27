@@ -31,11 +31,24 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.*.local
+
+# Keep .env.example for documentation
+!.env.example
 
 # vercel
 .vercel
 
+# Hardhat
+cache/
+artifacts/
+typechain-types/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Private tools
+/tools/
