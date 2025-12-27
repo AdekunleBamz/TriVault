@@ -20,7 +20,7 @@
     "tags": ["base", "nft", "collectibles", "web3", "seals"],
     "heroImageUrl": "https://tri-vault.vercel.app/og-image.png",
     "tagline": "Collect 3 Vault Seals on Base",
-    "ogTitle": "TriVault - Seal Collection Mini-App",
+    "ogTitle": "TriVault - Collect Seals",
     "ogDescription": "Collect 3 unique vault seals on Base chain. Complete the challenge and earn your seals!",
     "ogImageUrl": "https://tri-vault.vercel.app/og-image.png"
   }
