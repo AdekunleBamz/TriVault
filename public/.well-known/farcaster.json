@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjAsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIn0",
+    "payload": "eyJkb21haW4iOiJ0cml2YXVsdC52ZXJjZWwuYXBwIn0",
+    "signature": "MHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw"
+  },
+  "frame": {
+    "version": "1",
+    "name": "TriVault",
+    "iconUrl": "https://trivault.vercel.app/icon.png",
+    "homeUrl": "https://trivault.vercel.app",
+    "imageUrl": "https://trivault.vercel.app/og-image.png",
+    "buttonTitle": "🔐 Collect Seals",
+    "splashImageUrl": "https://trivault.vercel.app/splash.png",
+    "splashBackgroundColor": "#030712",
+    "webhookUrl": "https://trivault.vercel.app/api/webhook"
+  }
+}
