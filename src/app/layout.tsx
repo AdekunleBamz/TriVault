@@ -7,14 +7,22 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://trivault.vercel.app";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://tri-vault.vercel.app";
 
 export const metadata: Metadata = {
   title: "TriVault | Collect Seals on Base",
-  description: "Collect 3 seals by interacting with Base chain contracts. A Farcaster mini-app.",
+  description: "Collect 3 unique vault seals on Base chain. Complete the challenge and earn your seals!",
   openGraph: {
-    title: "TriVault | Collect Seals on Base",
-    description: "Collect 3 seals by interacting with Base chain contracts",
+    title: "TriVault - Seal Collection Mini-App",
+    description: "Collect 3 unique vault seals on Base chain. Complete the challenge and earn your seals!",
+    images: [`${appUrl}/og-image.png`],
+    siteName: "TriVault",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TriVault - Seal Collection Mini-App",
+    description: "Collect 3 unique vault seals on Base chain.",
     images: [`${appUrl}/og-image.png`],
   },
   other: {

@@ -1,18 +1,27 @@
 {
   "accountAssociation": {
-    "header": "eyJmaWQiOjAsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIn0",
-    "payload": "eyJkb21haW4iOiJ0cml2YXVsdC52ZXJjZWwuYXBwIn0",
-    "signature": "MHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw"
+    "header": "eyJmaWQiOjY1MzQ3OSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDBjMDkwNjQzOUM2YTZiRDVmNzI0MDkyZjdCZWNlZDkyY2ZhNDI4QTEifQ",
+    "payload": "eyJkb21haW4iOiJ0cmktdmF1bHQudmVyY2VsLmFwcCJ9",
+    "signature": "fDEZP7EQawnjXTG0T/Y9hexNcpAlv8W5y4wfyJ2cf00ZOTvwHMmGSGseYdejchpHa4HDKaLN8FYYVLYlqX75oBw="
   },
   "frame": {
     "version": "1",
     "name": "TriVault",
-    "iconUrl": "https://trivault.vercel.app/icon.png",
-    "homeUrl": "https://trivault.vercel.app",
-    "imageUrl": "https://trivault.vercel.app/og-image.png",
+    "subtitle": "Collect Digital Seals on Base",
+    "description": "TriVault is a seal collection mini-app on Base chain. Connect your wallet and collect 3 unique vault seals to complete the challenge!",
+    "iconUrl": "https://tri-vault.vercel.app/icon.png",
+    "homeUrl": "https://tri-vault.vercel.app",
+    "imageUrl": "https://tri-vault.vercel.app/og-image.png",
     "buttonTitle": "🔐 Collect Seals",
-    "splashImageUrl": "https://trivault.vercel.app/splash.png",
+    "splashImageUrl": "https://tri-vault.vercel.app/splash.png",
     "splashBackgroundColor": "#030712",
-    "webhookUrl": "https://trivault.vercel.app/api/webhook"
+    "webhookUrl": "https://tri-vault.vercel.app/api/webhook",
+    "primaryCategory": "games",
+    "tags": ["base", "nft", "collectibles", "web3", "seals"],
+    "heroImageUrl": "https://tri-vault.vercel.app/og-image.png",
+    "tagline": "Collect 3 Vault Seals on Base",
+    "ogTitle": "TriVault - Seal Collection Mini-App",
+    "ogDescription": "Collect 3 unique vault seals on Base chain. Complete the challenge and earn your seals!",
+    "ogImageUrl": "https://tri-vault.vercel.app/og-image.png"
   }
 }
