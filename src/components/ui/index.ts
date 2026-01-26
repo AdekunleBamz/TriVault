@@ -20,3 +20,6 @@ export { Badge, SealBadge, StatusBadge, RankBadge } from './Badge'
 export { Input, SearchInput } from './Input'
 export { Accordion } from './Accordion'
 export { Confetti, useConfetti } from './Confetti'
+
+// Accessibility
+export { SkipLink } from './SkipLink'
