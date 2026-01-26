@@ -14,6 +14,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   rightIcon?: ReactNode
   fullWidth?: boolean
   children: ReactNode
+  /** Accessible label for screen readers when button has icon only */
+  ariaLabel?: string
+  /** ID of element that describes this button */
+  ariaDescribedBy?: string
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -48,6 +52,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       children,
       className = '',
+      ariaLabel,
+      ariaDescribedBy,
       ...props
     },
     ref
@@ -58,6 +64,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={isDisabled}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
+        aria-busy={isLoading}
+        aria-disabled={isDisabled}
         className={`
           inline-flex items-center justify-center gap-2
           font-semibold rounded-lg border
