@@ -27,7 +27,7 @@ export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
 /**
  * Creates a debounced function with cancel capability
  */
-export function debounceWithCancel<T extends (...args: Parameters<T>) => ReturnType<T>>(
+export function debounceWithCancel<T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): {
@@ -46,7 +46,7 @@ export function debounceWithCancel<T extends (...args: Parameters<T>) => ReturnT
 
     timeoutId = setTimeout(() => {
       if (lastArgs) {
-        func(...lastArgs);
+        func(...lastArgs as Parameters<T>);
       }
       timeoutId = null;
       lastArgs = null;
@@ -64,7 +64,7 @@ export function debounceWithCancel<T extends (...args: Parameters<T>) => ReturnT
   debouncedFn.flush = () => {
     if (timeoutId && lastArgs) {
       clearTimeout(timeoutId);
-      func(...lastArgs);
+      func(...lastArgs as Parameters<T>);
       timeoutId = null;
       lastArgs = null;
     }
@@ -77,7 +77,7 @@ export function debounceWithCancel<T extends (...args: Parameters<T>) => ReturnT
  * Creates a throttled version of a function
  * Executes at most once per specified interval
  */
-export function throttle<T extends (...args: Parameters<T>) => ReturnType<T>>(
+export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -85,7 +85,7 @@ export function throttle<T extends (...args: Parameters<T>) => ReturnType<T>>(
 
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
-      func(...args);
+      func(...args as Parameters<T>);
       inThrottle = true;
       setTimeout(() => {
         inThrottle = false;
@@ -97,7 +97,7 @@ export function throttle<T extends (...args: Parameters<T>) => ReturnType<T>>(
 /**
  * Creates a throttled function with trailing call option
  */
-export function throttleWithTrailing<T extends (...args: Parameters<T>) => ReturnType<T>>(
+export function throttleWithTrailing<T extends (...args: any[]) => any>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -111,7 +111,7 @@ export function throttleWithTrailing<T extends (...args: Parameters<T>) => Retur
 
     if (timeSinceLastCall >= limit) {
       lastCall = now;
-      func(...args);
+      func(...args as Parameters<T>);
     } else {
       lastArgs = args;
       if (timeoutId) {
@@ -120,7 +120,7 @@ export function throttleWithTrailing<T extends (...args: Parameters<T>) => Retur
       timeoutId = setTimeout(() => {
         lastCall = Date.now();
         if (lastArgs) {
-          func(...lastArgs);
+          func(...lastArgs as Parameters<T>);
         }
         timeoutId = null;
         lastArgs = null;
@@ -133,7 +133,7 @@ export function throttleWithTrailing<T extends (...args: Parameters<T>) => Retur
  * Creates a leading-edge throttled function
  * Executes immediately on first call, then ignores calls for the duration
  */
-export function throttleLeading<T extends (...args: Parameters<T>) => ReturnType<T>>(
+export function throttleLeading<T extends (...args: any[]) => any>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -143,7 +143,7 @@ export function throttleLeading<T extends (...args: Parameters<T>) => ReturnType
     const now = Date.now();
     if (now - lastCall >= limit) {
       lastCall = now;
-      func(...args);
+      func(...args as Parameters<T>);
     }
   };
 }

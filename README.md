@@ -76,8 +76,7 @@ trivault/
 │   ├── hooks/               # Custom React hooks
 │   └── lib/                 # Utility functions
 ├── contracts/               # Solidity smart contracts
-├── public/                  # Static assets
-└── tools/                   # Deployment and utility scripts
+└── public/                  # Static assets
 ```
 
 ## 🔗 Smart Contract

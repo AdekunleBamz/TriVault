@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useAccount, useReadContract } from 'wagmi'
-import { TRIVAULT_ADDRESS, TRIVAULT_ABI } from '@/config/contracts'
+import { useAccount } from 'wagmi'
+import { useSealVault, useRewardsVault } from '@/hooks/useTriVault'
+import { SEALS } from '@/config/contracts'
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card'
 import { Tabs, TabPanel, useTabs } from './ui/Tabs'
 import { SearchInput } from './ui/Input'
@@ -11,14 +12,17 @@ import { TableRowSkeleton } from './ui/Skeleton'
 import { formatAddress } from '@/lib/utils'
 import { useDebounce } from '@/hooks'
 
+// Total seals now is 5
+const TOTAL_SEALS = SEALS.length
+
 // Mock data for demonstration - in production, this would come from an indexer or subgraph
 const MOCK_LEADERBOARD_DATA = [
-  { address: '0x1234567890123456789012345678901234567890', seals: 3, completedAt: Date.now() / 1000 - 86400 },
-  { address: '0x2345678901234567890123456789012345678901', seals: 3, completedAt: Date.now() / 1000 - 172800 },
-  { address: '0x3456789012345678901234567890123456789012', seals: 3, completedAt: Date.now() / 1000 - 259200 },
-  { address: '0x4567890123456789012345678901234567890123', seals: 2, completedAt: null },
-  { address: '0x5678901234567890123456789012345678901234', seals: 2, completedAt: null },
-  { address: '0x6789012345678901234567890123456789012345', seals: 1, completedAt: null },
+  { address: '0x1234567890123456789012345678901234567890', seals: 5, completedAt: Date.now() / 1000 - 86400 },
+  { address: '0x2345678901234567890123456789012345678901', seals: 5, completedAt: Date.now() / 1000 - 172800 },
+  { address: '0x3456789012345678901234567890123456789012', seals: 5, completedAt: Date.now() / 1000 - 259200 },
+  { address: '0x4567890123456789012345678901234567890123', seals: 4, completedAt: null },
+  { address: '0x5678901234567890123456789012345678901234', seals: 3, completedAt: null },
+  { address: '0x6789012345678901234567890123456789012345', seals: 2, completedAt: null },
   { address: '0x7890123456789012345678901234567890123456', seals: 1, completedAt: null },
   { address: '0x8901234567890123456789012345678901234567', seals: 1, completedAt: null },
 ]
@@ -35,17 +39,14 @@ export function Leaderboard() {
   const [searchQuery, setSearchQuery] = useState('')
   const debouncedSearch = useDebounce(searchQuery, 300)
   
-  // Read stats for total numbers
-  const { data: stats, isLoading: isLoadingStats } = useReadContract({
-    address: TRIVAULT_ADDRESS,
-    abi: TRIVAULT_ABI,
-    functionName: 'getStats',
-  })
+  // Use the new hooks for stats
+  const { stats: sealStats, isLoadingStats } = useSealVault()
+  const { stats: rewardsStats, topUsers } = useRewardsVault()
 
   // Filter data based on tab and search
   const filteredData = MOCK_LEADERBOARD_DATA.filter((entry) => {
     // Filter by tab
-    if (activeTab === 'champions' && entry.seals !== 3) return false
+    if (activeTab === 'champions' && entry.seals !== TOTAL_SEALS) return false
     
     // Filter by search
     if (debouncedSearch) {
@@ -70,10 +71,10 @@ export function Leaderboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card gradient="from-blue-500 to-blue-600">
           <div className="text-center">
-            <p className="text-gray-400 text-sm">Total Collectors</p>
+            <p className="text-gray-400 text-sm">Total Seals Collected</p>
             <p className="text-3xl font-bold text-white">
               {isLoadingStats ? '...' : (
-                stats ? (Number(stats[1]) + Number(stats[2]) + Number(stats[3])).toString() : '0'
+                sealStats ? sealStats.totalSealsCollected.toLocaleString() : '0'
               )}
             </p>
           </div>
@@ -81,9 +82,9 @@ export function Leaderboard() {
         
         <Card gradient="from-purple-500 to-purple-600">
           <div className="text-center">
-            <p className="text-gray-400 text-sm">Champions (3/3)</p>
+            <p className="text-gray-400 text-sm">Champions ({TOTAL_SEALS}/{TOTAL_SEALS})</p>
             <p className="text-3xl font-bold text-white">
-              {MOCK_LEADERBOARD_DATA.filter(d => d.seals === 3).length}
+              {MOCK_LEADERBOARD_DATA.filter(d => d.seals === TOTAL_SEALS).length}
             </p>
           </div>
         </Card>
@@ -93,7 +94,7 @@ export function Leaderboard() {
             <p className="text-gray-400 text-sm">Total Fees (ETH)</p>
             <p className="text-3xl font-bold text-white">
               {isLoadingStats ? '...' : (
-                stats ? (Number(stats[0]) / 1e18).toFixed(5) : '0'
+                sealStats ? (Number(sealStats.totalFeesCollected) / 1e18).toFixed(5) : '0'
               )}
             </p>
           </div>
@@ -172,21 +173,22 @@ export function Leaderboard() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-1">
-                          {[1, 2, 3].map((seal) => (
+                          {SEALS.map((seal, sealIndex) => (
                             <span
-                              key={seal}
-                              className={`text-lg ${entry.seals >= seal ? 'opacity-100' : 'opacity-30'}`}
+                              key={seal.id}
+                              className={`text-lg ${entry.seals > sealIndex ? 'opacity-100' : 'opacity-30'}`}
+                              title={seal.name}
                             >
-                              {seal === 1 ? '💵' : seal === 2 ? '💎' : '🌉'}
+                              {seal.icon}
                             </span>
                           ))}
                           <span className="ml-2 text-sm text-gray-400">
-                            {entry.seals}/3
+                            {entry.seals}/{TOTAL_SEALS}
                           </span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        {entry.seals === 3 ? (
+                        {entry.seals === TOTAL_SEALS ? (
                           <Badge variant="success" size="sm">👑 Champion</Badge>
                         ) : (
                           <Badge variant="default" size="sm">In Progress</Badge>

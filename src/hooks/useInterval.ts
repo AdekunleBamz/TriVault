@@ -35,7 +35,7 @@ export function useControllableInterval(
 } {
   const [isRunning, setIsRunning] = useState(false);
   const savedCallback = useRef(callback);
-  const intervalRef = useRef<NodeJS.Timer | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     savedCallback.current = callback;
@@ -141,7 +141,7 @@ export function useIntervalCounter(
   
   const [count, setCount] = useState(startValue);
   const [isRunning, setIsRunning] = useState(autoStart);
-  const intervalRef = useRef<NodeJS.Timer | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const stop = useCallback(() => {
     setIsRunning(false);

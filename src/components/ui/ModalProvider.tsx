@@ -7,7 +7,7 @@ interface ModalConfig {
   title: string;
   content: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  showClose?: boolean;
+  showCloseButton?: boolean;
 }
 
 interface ModalContextValue {
@@ -42,7 +42,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
           onClose={closeModal}
           title={config.title}
           size={config.size}
-          showClose={config.showClose}
+          showCloseButton={config.showCloseButton}
         >
           {config.content}
         </Modal>

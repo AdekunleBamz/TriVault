@@ -153,7 +153,7 @@ export function useStickyDetection<T extends HTMLElement = HTMLElement>(options:
       ({ children }: { children: React.ReactNode }) => (
         <>
           <div ref={sentinelRef} className="h-0 w-full" aria-hidden />
-          <div ref={ref as React.RefObject<HTMLDivElement>}>{children}</div>
+          <div ref={ref as unknown as React.RefObject<HTMLDivElement>}>{children}</div>
         </>
       ),
       []

@@ -1,122 +1,111 @@
 'use client'
 
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
-import { parseEther } from 'viem'
-import { TRIVAULT_ADDRESS, TRIVAULT_ABI, VAULTS, CREATOR_FEE } from '@/config/contracts'
-import { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
+import { SEALS, SEAL_FEE } from '@/config/contracts'
+import { useState, useCallback } from 'react'
+import { useSealVault, useCollectSeal } from '@/hooks/useTriVault'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Skeleton } from '@/components/ui/Skeleton'
 
-interface VaultCardProps {
-  vault: typeof VAULTS[number]
-  isSealed: boolean
-  interactionCount: bigint
+interface SealCardProps {
+  seal: typeof SEALS[number]
+  isCollected: boolean
+  collectorCount: number
   onCollect: () => void
   isPending: boolean
   isConfirming: boolean
 }
 
-function VaultCard({ vault, isSealed, interactionCount, onCollect, isPending, isConfirming }: VaultCardProps) {
+function SealCard({ seal, isCollected, collectorCount, onCollect, isPending, isConfirming }: SealCardProps) {
+  const isLoading = isPending || isConfirming
+
   return (
-    <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${vault.color} p-1`}>
-      <div className="bg-gray-900 rounded-xl p-6 h-full">
-        {/* Seal badge */}
-        {isSealed && (
-          <div className="absolute top-4 right-4 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold">
-            ✓ SEALED
+    <Card className={`relative overflow-hidden bg-gradient-to-br ${seal.color} p-[2px]`}>
+      <div className="bg-gray-900 rounded-xl p-5 h-full flex flex-col">
+        {/* Collected badge */}
+        {isCollected && (
+          <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg">
+            ✓ COLLECTED
           </div>
         )}
         
         {/* Icon */}
-        <div className="text-5xl mb-4">{vault.icon}</div>
+        <div className="text-5xl mb-3 filter drop-shadow-lg">{seal.icon}</div>
         
         {/* Info */}
-        <h3 className="text-xl font-bold text-white mb-1">{vault.name}</h3>
-        <p className="text-gray-400 text-sm mb-4">{vault.description}</p>
+        <h3 className="text-lg font-bold text-white mb-1">{seal.name}</h3>
+        <p className="text-gray-400 text-sm mb-3 flex-grow">{seal.description}</p>
         
         {/* Stats */}
-        <div className="text-gray-500 text-xs mb-4">
-          {interactionCount.toString()} collectors
+        <div className="text-gray-500 text-xs mb-3 flex items-center gap-1">
+          <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+          {collectorCount.toLocaleString()} collectors
         </div>
         
         {/* Button */}
-        <button
+        <Button
           onClick={onCollect}
-          disabled={isSealed || isPending || isConfirming}
-          className={`w-full py-3 rounded-lg font-semibold transition-all ${
-            isSealed
-              ? 'bg-green-600 text-white cursor-not-allowed'
-              : isPending || isConfirming
-              ? 'bg-gray-600 text-gray-300 cursor-wait'
-              : `bg-gradient-to-r ${vault.color} text-white hover:opacity-90`
-          }`}
+          disabled={isCollected || isLoading}
+          isLoading={isLoading}
+          variant={isCollected ? 'secondary' : 'primary'}
+          className={`w-full ${!isCollected && !isLoading ? `bg-gradient-to-r ${seal.color}` : ''}`}
         >
-          {isSealed
+          {isCollected
             ? '✓ Collected'
             : isPending
             ? 'Confirm in wallet...'
             : isConfirming
             ? 'Confirming...'
-            : `Collect Seal (${CREATOR_FEE} ETH)`}
-        </button>
+            : `Collect (${SEAL_FEE} ETH)`}
+        </Button>
       </div>
-    </div>
+    </Card>
+  )
+}
+
+function SealCardSkeleton() {
+  return (
+    <Card className="p-5 h-full">
+      <Skeleton className="w-12 h-12 mb-3" />
+      <Skeleton className="w-3/4 h-6 mb-2" />
+      <Skeleton className="w-full h-4 mb-1" />
+      <Skeleton className="w-1/2 h-4 mb-3" />
+      <Skeleton className="w-full h-10" />
+    </Card>
   )
 }
 
 export function VaultGrid() {
-  const { address, isConnected } = useAccount()
-  const [activeVault, setActiveVault] = useState<number | null>(null)
+  const { isConnected } = useAccount()
+  const { userSeals, hasAllSeals, stats, isLoadingSeals } = useSealVault()
+  const { collectSeal, collectMultipleSeals, isPending, isConfirming } = useCollectSeal()
+  const [activeSeal, setActiveSeal] = useState<number | null>(null)
 
-  // Read user seals
-  const { data: userSeals, refetch: refetchSeals } = useReadContract({
-    address: TRIVAULT_ADDRESS,
-    abi: TRIVAULT_ABI,
-    functionName: 'getUserSeals',
-    args: address ? [address] : undefined,
-    query: { enabled: !!address },
-  })
+  const handleCollect = useCallback((sealType: number) => {
+    setActiveSeal(sealType)
+    collectSeal(sealType)
+  }, [collectSeal])
 
-  // Read stats
-  const { data: stats, refetch: refetchStats } = useReadContract({
-    address: TRIVAULT_ADDRESS,
-    abi: TRIVAULT_ABI,
-    functionName: 'getStats',
-  })
-
-  // Check if user has all seals
-  const { data: hasAllSeals } = useReadContract({
-    address: TRIVAULT_ADDRESS,
-    abi: TRIVAULT_ABI,
-    functionName: 'hasAllSeals',
-    args: address ? [address] : undefined,
-    query: { enabled: !!address },
-  })
-
-  // Write contract
-  const { writeContract, data: hash, isPending, reset } = useWriteContract()
-
-  // Wait for transaction
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
-
-  // Refetch after successful transaction
-  useEffect(() => {
-    if (isSuccess) {
-      refetchSeals()
-      refetchStats()
-      setActiveVault(null)
-      reset()
+  const handleCollectAll = useCallback(() => {
+    const uncollectedSeals = SEALS
+      .filter((_, index) => !userSeals[index])
+      .map(seal => seal.id)
+    
+    if (uncollectedSeals.length > 0) {
+      setActiveSeal(-1) // -1 indicates "all"
+      collectMultipleSeals(uncollectedSeals)
     }
-  }, [isSuccess, refetchSeals, refetchStats, reset])
+  }, [userSeals, collectMultipleSeals])
 
-  const handleCollect = (vaultNumber: number) => {
-    setActiveVault(vaultNumber)
-    writeContract({
-      address: TRIVAULT_ADDRESS,
-      abi: TRIVAULT_ABI,
-      functionName: 'collectSeal',
-      args: [vaultNumber],
-      value: parseEther(CREATOR_FEE),
-    })
+  // Get seal counts from stats
+  const getSealCount = (index: number): number => {
+    if (!stats?.sealCounts) return 0
+    return Number(stats.sealCounts[index] || 0)
   }
+
+  const collectedCount = userSeals.filter(Boolean).length
+  const uncollectedCount = SEALS.length - collectedCount
 
   if (!isConnected) {
     return (
@@ -128,52 +117,114 @@ export function VaultGrid() {
     )
   }
 
+  if (isLoadingSeals) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        {[...Array(5)].map((_, i) => (
+          <SealCardSkeleton key={i} />
+        ))}
+      </div>
+    )
+  }
+
   return (
-    <div>
-      {/* Progress */}
+    <div className="space-y-6">
+      {/* Completion Banner */}
       {hasAllSeals && (
-        <div className="mb-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-6 text-center">
+        <Card className="bg-gradient-to-r from-yellow-500 to-orange-500 p-6 text-center">
           <div className="text-4xl mb-2">🏆</div>
-          <h2 className="text-2xl font-bold text-white">All Seals Collected!</h2>
-          <p className="text-yellow-100">You&apos;ve completed the TriVault challenge!</p>
-        </div>
+          <h2 className="text-2xl font-bold text-white">All 5 Seals Collected!</h2>
+          <p className="text-yellow-100">You&apos;ve completed the TriVault Seal Collection!</p>
+        </Card>
       )}
 
-      {/* Vault Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {VAULTS.map((vault, index) => (
-          <VaultCard
-            key={vault.id}
-            vault={vault}
-            isSealed={userSeals?.[index] ?? false}
-            interactionCount={stats ? stats[index + 1] : BigInt(0)}
-            onCollect={() => handleCollect(vault.id)}
-            isPending={isPending && activeVault === vault.id}
-            isConfirming={isConfirming && activeVault === vault.id}
+      {/* Progress Bar */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-gray-300">Collection Progress</span>
+          <span className="text-sm text-gray-400">{collectedCount}/{SEALS.length} Seals</span>
+        </div>
+        <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+          <div 
+            className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-full rounded-full transition-all duration-500"
+            style={{ width: `${(collectedCount / SEALS.length) * 100}%` }}
+          />
+        </div>
+      </Card>
+
+      {/* Collect All Button */}
+      {uncollectedCount > 1 && (
+        <Button
+          onClick={handleCollectAll}
+          disabled={isPending || isConfirming}
+          isLoading={activeSeal === -1 && (isPending || isConfirming)}
+          variant="primary"
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600"
+        >
+          {isPending && activeSeal === -1
+            ? 'Confirm in wallet...'
+            : isConfirming && activeSeal === -1
+            ? 'Confirming...'
+            : `Collect All ${uncollectedCount} Seals (${(parseFloat(SEAL_FEE) * uncollectedCount).toFixed(5)} ETH)`}
+        </Button>
+      )}
+
+      {/* Seal Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        {SEALS.map((seal, index) => (
+          <SealCard
+            key={seal.id}
+            seal={seal}
+            isCollected={userSeals[index] ?? false}
+            collectorCount={getSealCount(index)}
+            onCollect={() => handleCollect(seal.id)}
+            isPending={isPending && activeSeal === seal.id}
+            isConfirming={isConfirming && activeSeal === seal.id}
           />
         ))}
       </div>
 
       {/* Stats */}
-      <div className="mt-8 bg-gray-800 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">📊 Global Stats</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div>
-            <div className="text-2xl font-bold text-blue-400">
-              {stats ? (Number(stats[0]) / 1e18).toFixed(6) : '0'}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-white mb-4">📊 Global Statistics</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
+          <div className="bg-gray-800 rounded-lg p-3">
+            <div className="text-xl font-bold text-blue-400">
+              {stats ? stats.totalSealsCollected.toLocaleString() : '0'}
             </div>
-            <div className="text-gray-400 text-sm">Total Fees (ETH)</div>
+            <div className="text-gray-400 text-xs">Total Collected</div>
           </div>
-          {VAULTS.map((vault, index) => (
-            <div key={vault.id}>
-              <div className="text-2xl font-bold text-white">
-                {stats ? stats[index + 1].toString() : '0'}
+          <div className="bg-gray-800 rounded-lg p-3">
+            <div className="text-xl font-bold text-green-400">
+              {stats ? (Number(stats.totalFeesCollected) / 1e18).toFixed(4) : '0'}
+            </div>
+            <div className="text-gray-400 text-xs">Fees (ETH)</div>
+          </div>
+          {SEALS.slice(0, 4).map((seal, index) => (
+            <div key={seal.id} className="bg-gray-800 rounded-lg p-3">
+              <div className="text-xl font-bold text-white">
+                {getSealCount(index).toLocaleString()}
               </div>
-              <div className="text-gray-400 text-sm">{vault.name}</div>
+              <div className="text-gray-400 text-xs flex items-center justify-center gap-1">
+                <span>{seal.icon}</span>
+                {seal.name}
+              </div>
             </div>
           ))}
         </div>
-      </div>
+        {/* Fifth seal stat */}
+        <div className="mt-4 flex justify-center">
+          <div className="bg-gray-800 rounded-lg p-3 text-center min-w-[120px]">
+            <div className="text-xl font-bold text-white">
+              {getSealCount(4).toLocaleString()}
+            </div>
+            <div className="text-gray-400 text-xs flex items-center justify-center gap-1">
+              <span>{SEALS[4]?.icon}</span>
+              {SEALS[4]?.name}
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   )
 }

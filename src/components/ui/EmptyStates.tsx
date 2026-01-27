@@ -15,6 +15,7 @@ export interface EmptyStateProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   variant?: 'default' | 'minimal' | 'centered';
+  children?: ReactNode;
 }
 
 export interface NoResultsProps {
@@ -199,6 +200,7 @@ export function EmptyState({
   className = '',
   size = 'md',
   variant = 'default',
+  children,
 }: EmptyStateProps) {
   const sizeClasses = {
     sm: {
@@ -255,6 +257,7 @@ export function EmptyState({
           {secondaryAction}
         </div>
       )}
+      {children}
     </div>
   );
 }

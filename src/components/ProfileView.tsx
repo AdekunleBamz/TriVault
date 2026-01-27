@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useAccount, useReadContract } from 'wagmi'
-import { TRIVAULT_ADDRESS, TRIVAULT_ABI, VAULTS } from '@/config/contracts'
+import { useAccount } from 'wagmi'
+import { SEALS } from '@/config/contracts'
+import { useSealVault, useRewardsVault, useAchievementVault } from '@/hooks/useTriVault'
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card'
 import { Button } from './ui/Button'
 import { Badge, SealBadge } from './ui/Badge'
@@ -13,31 +14,18 @@ import { useClipboard } from '@/hooks'
 import { useToast } from './ui/ToastProvider'
 import Link from 'next/link'
 
+const TOTAL_SEALS = SEALS.length
+
 export function ProfileView() {
   const { address, isConnected } = useAccount()
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const { copy } = useClipboard()
   const { success } = useToast()
 
-  // Read user seals
-  const { data: userSeals, isLoading: isLoadingSeals } = useReadContract({
-    address: TRIVAULT_ADDRESS,
-    abi: TRIVAULT_ABI,
-    functionName: 'getUserSeals',
-    args: address ? [address] : undefined,
-    query: { enabled: !!address },
-  })
-
-  // Check if user has all seals
-  const { data: hasAllSeals } = useReadContract({
-    address: TRIVAULT_ADDRESS,
-    abi: TRIVAULT_ABI,
-    functionName: 'hasAllSeals',
-    args: address ? [address] : undefined,
-    query: { enabled: !!address },
-  })
-
-  const sealsCollected = userSeals ? userSeals.filter(Boolean).length : 0
+  // Use the new hooks
+  const { userSeals, hasAllSeals, sealsCollected, isLoadingSeals } = useSealVault()
+  const { userRewards, isLoadingRewards } = useRewardsVault()
+  const { achievementCount, isLoadingAchievements } = useAchievementVault()
 
   const handleCopyAddress = async () => {
     if (address) {
@@ -87,11 +75,17 @@ export function ProfileView() {
               </button>
             </div>
             
-            <div className="flex items-center justify-center md:justify-start gap-2">
+            <div className="flex items-center justify-center md:justify-start gap-2 flex-wrap">
               {hasAllSeals ? (
                 <Badge variant="success">👑 TriVault Champion</Badge>
               ) : (
-                <Badge variant="info">{sealsCollected}/3 Seals Collected</Badge>
+                <Badge variant="info">{sealsCollected}/{TOTAL_SEALS} Seals Collected</Badge>
+              )}
+              {userRewards && (
+                <Badge variant="default">🎯 {Number(userRewards.points).toLocaleString()} Points</Badge>
+              )}
+              {achievementCount > 0 && (
+                <Badge variant="default">🏅 {achievementCount} Achievements</Badge>
               )}
             </div>
           </div>
@@ -120,33 +114,59 @@ export function ProfileView() {
         </div>
       </Card>
 
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="text-center">
+          <div className="text-3xl mb-1">{sealsCollected}/{TOTAL_SEALS}</div>
+          <div className="text-gray-400 text-sm">Seals</div>
+        </Card>
+        <Card className="text-center">
+          <div className="text-3xl mb-1">
+            {isLoadingRewards ? '...' : userRewards ? Number(userRewards.points).toLocaleString() : '0'}
+          </div>
+          <div className="text-gray-400 text-sm">Points</div>
+        </Card>
+        <Card className="text-center">
+          <div className="text-3xl mb-1">
+            {isLoadingRewards ? '...' : userRewards ? (Number(userRewards.staked) / 1e18).toFixed(4) : '0'}
+          </div>
+          <div className="text-gray-400 text-sm">Staked ETH</div>
+        </Card>
+        <Card className="text-center">
+          <div className="text-3xl mb-1">
+            {isLoadingAchievements ? '...' : achievementCount}
+          </div>
+          <div className="text-gray-400 text-sm">Achievements</div>
+        </Card>
+      </div>
+
       {/* Seals Collection */}
       <Card>
         <CardHeader>
           <CardTitle>Your Seals</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {VAULTS.map((vault, index) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {SEALS.map((seal, index) => {
               const isCollected = userSeals?.[index] ?? false
               
               return (
                 <div
-                  key={vault.id}
+                  key={seal.id}
                   className={`
                     relative overflow-hidden rounded-xl p-4
                     ${isCollected 
-                      ? `bg-gradient-to-br ${vault.color}` 
+                      ? `bg-gradient-to-br ${seal.color}` 
                       : 'bg-gray-800 opacity-60'
                     }
                   `}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-4xl">{vault.icon}</span>
+                    <span className="text-4xl">{seal.icon}</span>
                     <div>
-                      <h4 className="font-semibold text-white">{vault.name}</h4>
+                      <h4 className="font-semibold text-white text-sm">{seal.name}</h4>
                       {isLoadingSeals ? (
-                        <Skeleton width={80} height={20} />
+                        <Skeleton width={60} height={16} />
                       ) : (
                         <SealBadge sealed={isCollected} />
                       )}
@@ -175,23 +195,36 @@ export function ProfileView() {
             {/* Progress Bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Completion</span>
-                <span className="text-white font-medium">{sealsCollected}/3 ({Math.round((sealsCollected / 3) * 100)}%)</span>
+                <span className="text-gray-400">Seal Completion</span>
+                <span className="text-white font-medium">{sealsCollected}/{TOTAL_SEALS} ({Math.round((sealsCollected / TOTAL_SEALS) * 100)}%)</span>
               </div>
               <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
-                  style={{ width: `${(sealsCollected / 3) * 100}%` }}
+                  style={{ width: `${(sealsCollected / TOTAL_SEALS) * 100}%` }}
                 />
               </div>
             </div>
+
+            {/* Rewards Info */}
+            {userRewards && Number(userRewards.claimable) > 0 && (
+              <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
+                <h4 className="font-semibold text-white mb-2">💰 Claimable Rewards</h4>
+                <p className="text-gray-300 text-sm mb-3">
+                  You have {(Number(userRewards.claimable) / 1e18).toFixed(6)} ETH available to claim!
+                </p>
+                <Link href="/rewards">
+                  <Button variant="primary" size="sm">Claim Rewards</Button>
+                </Link>
+              </div>
+            )}
 
             {/* Next Steps */}
             {!hasAllSeals && (
               <div className="bg-gray-800/50 rounded-lg p-4">
                 <h4 className="font-semibold text-white mb-2">Next Steps</h4>
                 <p className="text-gray-400 text-sm mb-3">
-                  Collect {3 - sealsCollected} more seal{3 - sealsCollected > 1 ? 's' : ''} to become a TriVault Champion!
+                  Collect {TOTAL_SEALS - sealsCollected} more seal{TOTAL_SEALS - sealsCollected > 1 ? 's' : ''} to become a TriVault Champion!
                 </p>
                 <Link href="/">
                   <Button>Continue Collecting</Button>

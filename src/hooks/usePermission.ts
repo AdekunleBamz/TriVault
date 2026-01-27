@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-type PermissionName = 
+type BrowserPermissionName = 
   | 'geolocation'
   | 'notifications'
   | 'push'
@@ -40,7 +40,7 @@ interface UsePermissionReturn {
 /**
  * Hook for checking and requesting browser permissions
  */
-export function usePermission(permissionName: PermissionName): UsePermissionReturn {
+export function usePermission(permissionName: BrowserPermissionName): UsePermissionReturn {
   const [state, setState] = useState<PermissionState>('prompt');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -57,7 +57,7 @@ export function usePermission(permissionName: PermissionName): UsePermissionRetu
     const checkPermission = async () => {
       try {
         permissionStatus = await navigator.permissions.query({
-          name: permissionName as PermissionName,
+          name: permissionName as globalThis.PermissionName,
         });
         
         setState(permissionStatus.state);

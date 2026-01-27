@@ -201,3 +201,16 @@ export function useClickOutside(
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [ref, handler])
 }
+
+// Re-export all contract hooks
+export {
+  useTriVault,
+  useCollectSeal,
+  useTriVaultCore,
+  useSealVault,
+  useRewardsVault,
+  useStaking,
+  useAchievementVault,
+  useGovernanceVault,
+  useGovernanceActions,
+} from './useTriVault'

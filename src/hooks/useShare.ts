@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface ShareOptions {
   title: string;
@@ -21,7 +21,7 @@ interface UseShareReturn {
  * Hook for social sharing functionality
  */
 export function useShare(): UseShareReturn {
-  const { showToast } = useToast();
+  const { success, error } = useToast();
 
   const canNativeShare = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -46,14 +46,14 @@ export function useShare(): UseShareReturn {
       // Fallback to copy
       try {
         await navigator.clipboard.writeText(options.url);
-        showToast({ type: 'success', message: 'Link copied to clipboard!' });
+        success('Link copied to clipboard!');
         return true;
       } catch {
-        showToast({ type: 'error', message: 'Failed to copy link' });
+        error('Failed to copy link');
         return false;
       }
     },
-    [showToast]
+    [success, error]
   );
 
   const shareToTwitter = useCallback((text: string, url: string) => {
@@ -74,14 +74,14 @@ export function useShare(): UseShareReturn {
     async (text: string): Promise<boolean> => {
       try {
         await navigator.clipboard.writeText(text);
-        showToast({ type: 'success', message: 'Copied to clipboard!' });
+        success('Copied to clipboard!');
         return true;
       } catch {
-        showToast({ type: 'error', message: 'Failed to copy' });
+        error('Failed to copy');
         return false;
       }
     },
-    [showToast]
+    [success, error]
   );
 
   return {

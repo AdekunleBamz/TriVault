@@ -114,7 +114,12 @@ export const RARITY_LABELS: Record<Achievement['rarity'], string> = {
   legendary: 'Legendary',
 }
 
-export function getUnlockedAchievements(data: AchievementData): Achievement[] {
+export function getUnlockedAchievements(data: AchievementData): Achievement[];
+export function getUnlockedAchievements(sealCount: number): Achievement[];
+export function getUnlockedAchievements(dataOrCount: AchievementData | number): Achievement[] {
+  const data: AchievementData = typeof dataOrCount === 'number' 
+    ? { sealsCollected: dataOrCount, hasAllSeals: dataOrCount >= 3, totalInteractions: dataOrCount, isEarlyAdopter: false, referralCount: 0 }
+    : dataOrCount;
   return ACHIEVEMENTS.filter((achievement) => achievement.requirement(data))
 }
 
@@ -125,4 +130,16 @@ export function getLockedAchievements(data: AchievementData): Achievement[] {
 export function getAchievementProgress(data: AchievementData): number {
   const unlocked = getUnlockedAchievements(data).length
   return Math.round((unlocked / ACHIEVEMENTS.length) * 100)
+}
+
+export function getNextAchievement(sealCount: number): Achievement | null {
+  const data: AchievementData = { 
+    sealsCollected: sealCount, 
+    hasAllSeals: sealCount >= 3, 
+    totalInteractions: sealCount, 
+    isEarlyAdopter: false, 
+    referralCount: 0 
+  };
+  const locked = getLockedAchievements(data);
+  return locked.length > 0 ? locked[0] : null;
 }

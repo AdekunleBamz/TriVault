@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, createContext, useContext, type ReactNode } from 'react';
 
 // ============================================================================
 // Types
@@ -182,8 +182,6 @@ export function useDarkMode(config: DarkModeConfig = {}): UseDarkModeReturn {
 // Context-based Dark Mode
 // ============================================================================
 
-import { createContext, useContext, type ReactNode } from 'react';
-
 const DarkModeContext = createContext<UseDarkModeReturn | null>(null);
 
 export interface DarkModeProviderProps extends DarkModeConfig {
@@ -250,8 +248,6 @@ export function getDarkModeScript(
 // ============================================================================
 // Theme Toggle Component
 // ============================================================================
-
-import React from 'react';
 
 export interface ThemeToggleButtonProps {
   className?: string;

@@ -128,7 +128,7 @@ export function useThrottledCallback<T extends (...args: Parameters<T>) => Retur
         timeoutRef.current = setTimeout(() => {
           lastCalled.current = Date.now();
           if (lastArgsRef.current) {
-            callbackRef.current(...lastArgsRef.current);
+            callbackRef.current(...(lastArgsRef.current as Parameters<T>));
           }
         }, interval - timeSinceLastCall);
       }

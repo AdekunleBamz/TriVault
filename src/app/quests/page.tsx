@@ -1,10 +1,6 @@
-import { Metadata } from 'next';
-import { QuestSystem, SAMPLE_QUESTS } from '@/components/QuestSystem';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Quests | TriVault',
-  description: 'Complete quests and earn rewards',
-};
+import { QuestSystem, SAMPLE_QUESTS } from '@/components/QuestSystem';
 
 export default function QuestsPage() {
   const handleClaim = (questId: string) => {

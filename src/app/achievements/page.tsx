@@ -7,6 +7,15 @@ export const metadata: Metadata = {
 };
 
 export default function AchievementsPage() {
+  // Sample data - in production, this would come from user's actual data
+  const achievementData = {
+    sealsCollected: 5,
+    hasAllSeals: false,
+    totalInteractions: 10,
+    isEarlyAdopter: true,
+    referralCount: 0,
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -17,7 +26,7 @@ export default function AchievementsPage() {
           </p>
         </div>
 
-        <Achievements sealCount={5} />
+        <Achievements data={achievementData} />
       </div>
     </div>
   );
