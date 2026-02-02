@@ -32,6 +32,7 @@ contract TriVault {
     event SealCollected(address indexed user, uint8 indexed vaultNumber, uint256 timestamp);
     event VaultUpdated(uint8 indexed vaultNumber, address indexed newAddress);
     event FeesWithdrawn(address indexed creator, uint256 amount);
+    event FeePaid(address indexed user, uint256 amount, uint8 indexed vaultNumber);
     
     // Errors
     error InsufficientFee();
@@ -80,6 +81,8 @@ contract TriVault {
         // Increment counters
         vaultInteractions[vaultNumber]++;
         totalFeesCollected += msg.value;
+
+         emit FeePaid(msg.sender, msg.value, vaultNumber);
         
         // Get the vault address and perform a simple interaction (check if contract exists)
         address vaultAddress = getVaultAddress(vaultNumber);
